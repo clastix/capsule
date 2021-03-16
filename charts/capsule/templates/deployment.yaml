@@ -78,18 +78,18 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
         - name: kube-rbac-proxy
-          image: {{ include "capsule.proxyFullyQualifiedDockerImage" . }}
-          imagePullPolicy: {{ .Values.proxy.image.pullPolicy }}
+          image: {{ include "capsule.sidecarFullyQualifiedDockerImage" . }}
+          imagePullPolicy: {{ .Values.sidecar.image.pullPolicy }}
           args:
           - --secure-listen-address=0.0.0.0:8443
           - --upstream=http://127.0.0.1:8080/
           - --logtostderr=true
-          - --v=10
+          - --v=4
           ports:
           - containerPort: 8443
             name: https
             protocol: TCP
           resources:
-            {{- toYaml .Values.proxy.resources | nindent 12 }}
+            {{- toYaml .Values.sidecar.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false

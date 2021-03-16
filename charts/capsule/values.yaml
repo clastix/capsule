@@ -7,14 +7,14 @@ manager:
     repository: quay.io/clastix/capsule
     pullPolicy: IfNotPresent
     tag: ''
-  # Additional Capsule options
+  # Additional manager options
   options:
     logLevel: '4'
     forceTenantPrefix:
     capsuleUserGroup:
     protectedNamespaceRegex:
-    allowIngressHostnameCollision:
-    allowTenantIngressHostnamesCollision:
+    allowIngressHostnameCollision: false
+    allowTenantIngressHostnamesCollision: true
   livenessProbe:
     httpGet:
       path: /healthz
@@ -23,7 +23,6 @@ manager:
     httpGet:
       path: /readyz
       port: 10080
-
   resources:
     limits:
       cpu: 200m
@@ -31,7 +30,8 @@ manager:
     requests:
       cpu: 200m
       memory: 128Mi
-proxy:
+
+sidecar:
   image:
     repository: gcr.io/kubebuilder/kube-rbac-proxy
     pullPolicy: IfNotPresent
@@ -43,11 +43,71 @@ proxy:
     requests:
       cpu: 10m
       memory: 64Mi
+
 jobs:
   image:
     repository: bitnami/kubectl
     pullPolicy: IfNotPresent
     tag: "1.18"
+
+capsule-proxy:
+  enabled: false
+  replicaCount: 1
+  hostNetwork: false
+  hostPort: false
+  imagePullSecrets: []
+  image:
+    repository: quay.io/clastix/capsule-proxy
+    pullPolicy: IfNotPresent
+    tag: ""
+  options:
+    listeningPort: 9001
+    logLevel: '4'
+    k8sControlPlaneUrl: https://kubernetes.default.svc
+    capsuleUserGroup: capsule.clastix.io
+    oidcUsernameClaim: preferred_username
+    enableSSL: false
+    SSLDirectory: /opt/capsule-proxy
+    SSLCertFileName: tls.crt
+    SSLKeyFileName: tls.key
+    generateCertificates: false
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: "capsule-proxy"
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+  service:
+    type: ClusterIP # ClusterIP | NodePort | LoadBalancer
+    port: 9001
+    portName: proxy
+    nodePort:
+    annotations: {}
+    labels: {}
+  ingress:
+    enabled: false
+    # annotations: {}
+    # hosts:
+    # - host: kube.clastix.io
+    #   paths: [ "/" ]
+    # tls: []
+  resources: 
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 200m
+      memory: 128Mi
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 80
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
 mutatingWebhooksTimeoutSeconds: 30
 validatingWebhooksTimeoutSeconds: 30
 imagePullSecrets: []
@@ -58,12 +118,7 @@ serviceAccount:
 podAnnotations: {}
 priorityClassName: '' #system-cluster-critical
 nodeSelector: {}
-#  node-role.kubernetes.io/master: ""
 tolerations: []
-#- key: CriticalAddonsOnly
-#  operator: Exists
-#- effect: NoSchedule
-#  key: node-role.kubernetes.io/master
 replicaCount: 1
 affinity: {}
 podSecurityPolicy:

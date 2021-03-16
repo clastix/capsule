@@ -69,10 +69,10 @@ Create the manager fully-qualified Docker image to use
 {{- end }}
 
 {{/*
-Create the proxy fully-qualified Docker image to use
+Create the kube-rbac-proxy fully-qualified Docker image to use
 */}}
-{{- define "capsule.proxyFullyQualifiedDockerImage" -}}
-{{- printf "%s:%s" .Values.proxy.image.repository .Values.proxy.image.tag -}}
+{{- define "capsule.sidecarFullyQualifiedDockerImage" -}}
+{{- printf "%s:%s" .Values.sidecar.image.repository .Values.sidecar.image.tag -}}
 {{- end }}
 
 {{/*

@@ -21,8 +21,14 @@ sources:
 
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
-version: 0.0.17
+version: 0.0.18
 
 # This is the version number of the application being deployed.
 # This version number should be incremented each time you make changes to the application.
-appVersion: 0.0.4
+appVersion: 0.0.5
+
+dependencies:
+- name: capsule-proxy
+  version: "0.1.1"
+  repository: https://clastix.github.io/charts
+  condition: capsule-proxy.enabled
